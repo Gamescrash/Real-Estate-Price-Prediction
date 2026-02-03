@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bengaluru Home Price Studio</title>
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body data-api-base="http://127.0.0.1:5000">
+    <div class="page">
+      <header class="hero">
+        <nav class="nav">
+          <div class="brand">
+            <div class="brand-mark"></div>
+            <div class="brand-text">
+              <span class="brand-name">Bengaluru Price Studio</span>
+              <span class="brand-sub">House price prediction</span>
+            </div>
+          </div>
+          <div class="nav-actions">
+            <a class="ghost-link" href="#method">Methodology</a>
+            <a class="btn ghost" href="#predictor">Estimate</a>
+          </div>
+        </nav>
+
+        <div class="hero-grid">
+          <div class="hero-copy reveal" style="animation-delay: 0.05s;">
+            <p class="eyebrow">Bengaluru housing intelligence</p>
+            <h1>Forecast home prices with clarity and speed.</h1>
+            <p class="hero-lead">
+              Enter area, baths, BHK, and neighborhood to see an estimated price
+              from our trained Bengaluru listings model.
+            </p>
+            <div class="hero-actions">
+              <a class="btn primary" href="#predictor">Estimate a price</a>
+              <a class="btn ghost" href="#insights">Model insights</a>
+            </div>
+            <div class="hero-notes">
+              <div>
+                <span class="note-title">Location aware</span>
+                <span class="note-copy">One-hot encoded neighborhood signals.</span>
+              </div>
+              <div>
+                <span class="note-title">Cleaned data</span>
+                <span class="note-copy">Outlier and bath count filters applied.</span>
+              </div>
+              <div>
+                <span class="note-title">Fast output</span>
+                <span class="note-copy">Real time inference from Flask API.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-card reveal" style="animation-delay: 0.15s;">
+            <div class="hero-card-top">
+              <span class="pill">Live estimate</span>
+              <span class="pill" id="api-status">Connecting</span>
+            </div>
+            <div class="hero-estimate" id="hero-estimate">INR -- Lakh</div>
+            <div class="hero-estimate-sub" id="hero-eur">EUR --</div>
+            <p class="hero-caption">
+              Run a prediction to see the current estimate shown here.
+            </p>
+            <div class="hero-metrics">
+              <div>
+                <span class="metric-label">Inputs</span>
+                <span class="metric-value" id="hero-inputs">-</span>
+              </div>
+              <div>
+                <span class="metric-label">Model</span>
+                <span class="metric-value">Linear regression</span>
+              </div>
+            </div>
+            <div class="hero-cta">
+              <a class="btn primary" href="#predictor">Open studio</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section id="predictor" class="section">
+          <div class="section-header">
+            <p class="eyebrow">Prediction studio</p>
+            <h2>Estimate a Bengaluru home price</h2>
+            <p>
+              Provide the basics and get a quick estimate in lakhs of INR. The
+              model uses neighborhood, square footage, BHK, and bath counts.
+            </p>
+          </div>
+
+          <div class="predictor-grid">
+            <form id="price-form" class="card form-card reveal" style="animation-delay: 0.2s;">
+              <div class="field">
+                <label for="sqft">Total square feet</label>
+                <input
+                  type="number"
+                  id="sqft"
+                  name="total_sqft"
+                  min="200"
+                  step="10"
+                  placeholder="1200"
+                  required
+                />
+                <span class="helper">Average 800-2500 sqft for apartments.</span>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="bhk">BHK</label>
+                  <input
+                    type="number"
+                    id="bhk"
+                    name="bhk"
+                    min="1"
+                    max="10"
+                    step="1"
+                    placeholder="3"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="bath">Bath</label>
+                  <input
+                    type="number"
+                    id="bath"
+                    name="bath"
+                    min="1"
+                    max="10"
+                    step="1"
+                    placeholder="2"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="location">Location</label>
+                <select id="location" name="location" required>
+                  <option value="">Loading locations...</option>
+                </select>
+                <span class="helper" id="location-helper">Fetching locations from the API.</span>
+              </div>
+
+              <div class="field">
+                <label for="eur-rate">Tasso EUR per 1 INR (manuale)</label>
+                <input
+                  type="number"
+                  id="eur-rate"
+                  name="eur_rate"
+                  min="0"
+                  step="0.000001"
+                  placeholder="0.011"
+                />
+                <span class="helper">Inserisci il tasso di cambio per la conversione in euro.</span>
+              </div>
+
+              <button class="btn primary" type="submit">
+                Predict price
+                <span class="btn-icon" aria-hidden="true">&rarr;</span>
+              </button>
+              <p class="form-note" id="form-note">
+                Estimates are directional and based on historical listings.
+              </p>
+            </form>
+
+            <aside class="card result-card reveal" style="animation-delay: 0.3s;">
+              <div class="result-header">
+                <div>
+                  <p class="eyebrow">Your estimate</p>
+                  <h3>Estimated price</h3>
+                </div>
+                <span class="status-pill" id="status-pill" data-state="idle">Waiting</span>
+              </div>
+              <div class="result-value" id="result-value">INR -- Lakh</div>
+              <div class="result-eur" id="result-eur">EUR --</div>
+              <p class="result-caption" id="result-caption">
+                Choose a location to see an estimate in INR lakhs.
+              </p>
+
+              <div class="result-meta">
+                <div>
+                  <span class="meta-label">Inputs</span>
+                  <span class="meta-value" id="result-inputs">-</span>
+                </div>
+                <div>
+                  <span class="meta-label">API</span>
+                  <span class="meta-value">Flask endpoint</span>
+                </div>
+              </div>
+
+              <div class="result-tip">
+                <strong>Tip:</strong> If the API is offline, start the Flask server
+                and refresh this page.
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="method" class="section alt">
+          <div class="section-header">
+            <p class="eyebrow">Methodology</p>
+            <h2>How the model thinks</h2>
+            <p>
+              The training pipeline cleans the Bengaluru dataset, removes
+              outliers, and builds a location-aware linear regression model.
+            </p>
+          </div>
+          <div class="method-grid">
+            <article class="card method-card reveal" style="animation-delay: 0.1s;">
+              <h3>Data cleaning</h3>
+              <p>
+                Removes missing values, normalizes square footage ranges, and
+                filters unusual bath counts so the model learns consistent signals.
+              </p>
+            </article>
+            <article class="card method-card reveal" style="animation-delay: 0.2s;">
+              <h3>Feature engineering</h3>
+              <p>
+                Extracts BHK from the size column, groups rare locations into
+                "other", and encodes neighborhoods for locality awareness.
+              </p>
+            </article>
+            <article class="card method-card reveal" style="animation-delay: 0.3s;">
+              <h3>Model training</h3>
+              <p>
+                Fits a linear regression model with cross-validation to balance
+                interpretability and speed for real time estimates.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="insights" class="section">
+          <div class="section-header">
+            <p class="eyebrow">Insights</p>
+            <h2>Bring the prediction into context</h2>
+            <p>
+              Use the estimate as a directional signal. Combine it with recent
+              local listings for the most accurate decision.
+            </p>
+          </div>
+          <div class="insight-grid">
+            <div class="card insight-card reveal" style="animation-delay: 0.1s;">
+              <h3>Neighborhood impact</h3>
+              <p>
+                Location is one of the strongest drivers of price. Try comparing
+                similar BHK and square footage across neighborhoods.
+              </p>
+            </div>
+            <div class="card insight-card reveal" style="animation-delay: 0.2s;">
+              <h3>Square footage rules</h3>
+              <p>
+                Larger homes usually scale price higher, but the curve is not
+                linear across all segments. Inspect the estimate carefully.
+              </p>
+            </div>
+            <div class="card insight-card reveal" style="animation-delay: 0.3s;">
+              <h3>Quick scenario tests</h3>
+              <p>
+                Adjust bath and BHK values to model how upgrades or redesigns
+                could change your price band.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div>
+          <span class="brand-name">Bengaluru Price Studio</span>
+          <span class="footer-copy">Powered by a Flask prediction API.</span>
+        </div>
+        <div class="footer-meta">
+          <span>Built for the Bengaluru house price dataset.</span>
+          <span>Year <span id="year"></span></span>
+        </div>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

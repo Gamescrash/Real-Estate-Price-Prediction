@@ -1,12 +1,18 @@
 # Real-Estate-Price-Prediction
 
-Notebook-based workflow for cleaning, feature engineering, outlier removal, and model training on the Bengaluru house price dataset.
+End-to-end Bengaluru home price prediction project with a reproducible training notebook, a Flask API for inference, and a lightweight web UI for interactive estimates.
+
+## Highlights
+- Cleaned and feature-engineered dataset with robust outlier handling.
+- Trained regression model with cross-validation and model comparison.
+- Flask API for real-time predictions.
+- Static web UI for quick price estimation.
 
 ## Dataset
 - Source: Kaggle dataset `amitabhajoy/bengaluru-house-price-data`
 - Downloaded programmatically with `kagglehub`
 
-## What the notebook does
+## Training pipeline (notebook)
 1. **Data loading**
    - Downloads the dataset via `kagglehub` and reads it with `pandas`.
 2. **Cleaning & preprocessing**
@@ -33,12 +39,39 @@ Notebook-based workflow for cleaning, feature engineering, outlier removal, and 
    - Saves the trained model to `banglore_home_prices_model.pickle`.
    - Saves feature columns to `columns.json`.
 
-## Requirements
+## Project layout
+- `model/` holds the training notebook (`main.ipynb`) and saved artifacts.
+- `server/` contains the Flask API plus `artifacts/` used at runtime.
+- `client/` is a static UI that calls the API.
+
+## Prerequisites
+- Python 3.9+
+
+## Install
 Install dependencies from `requirement.txt`:
 
 ```bash
 pip install -r requirement.txt
 ```
 
-## Run
-Open `main.ipynb` in Jupyter or VS Code and run the cells in order.
+## Run locally
+1. (Optional) Retrain the model by running `model/main.ipynb`.
+2. Ensure the latest artifacts are in `server/artifacts/`.
+3. Start the API from the `server` directory so relative artifact paths resolve.
+
+```bash
+cd server
+python server.py
+```
+
+4. Open the UI by loading `client/app.html` in a browser.
+5. To point the UI at a different API host, update the `data-api-base` attribute in `client/app.html`.
+
+## API
+- `GET /get_location_names` returns the list of locations.
+- `POST /predict_home_price` expects form data: `total_sqft`, `location`, `bhk`, `bath`.
+- Response includes `estimated_price` in INR lakhs.
+
+## Notes
+- The API expects model artifacts at `server/artifacts/` (`columns.json` and `banglore_home_prices_model.pickle`).
+- CORS is enabled for all origins in the Flask app to allow the static UI to call the API.

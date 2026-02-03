@@ -6,3 +6,4 @@ scikit-learn
 warnings
 pickle
 json
+flask
